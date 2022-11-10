@@ -44,8 +44,6 @@ def position_controller(current_state,desired_state,params,question):
  
     acc: will be stored as desired_state["acc"] = [xdotdot, ydotdot, zdotdot]
     '''
-    # Example PD gains
-
 
     Kp = [17, 17, 20]
     Kd = [6.6, 6.6, 9]
@@ -59,15 +57,11 @@ def position_controller(current_state,desired_state,params,question):
         accs[i] = (xerror[i] * Kp[i] + xerrordot[i] * Kd[i])
 
     accs = np.array(accs)   
-    accs += desired_state["acc"]
+
     g = params['gravity']
-    # desired_state['acc'] = accs
-    F = params['mass'] * (accs + np.array([0, 0, g]))
-    # return F, desired_state['acc']
-    return F, desired_state['acc']
-
-
-    # TO DO:
+    F = params['mass'] * (accs + desired_state["acc"] + np.array([0, 0, g]))
+    desired_state["acc"] = accs
+    return F, accs
 
 
 def motor_model(F,M,current_state,params):
@@ -103,14 +97,16 @@ def motor_model(F,M,current_state,params):
             [-cq, cq, -cq, cq],
         ]
     )
+    
+
+    rpmd = np.sqrt(np.dot(np.linalg.inv(A), np.array([F[2], M[0], M[1], M[2]])))
+    rpmd = np.clip(rpmd, params['rpm_min'], params['rpm_max'])
+
     rpm = np.clip(rpm,  params['rpm_min'], params['rpm_max'])
-    vals = np.dot(A, (rpm**2))
+    vals = np.dot(A, np.square(rpm))
     F_motor = vals[0]
     M_motor = vals[1:]
 
-    v = np.dot(np.linalg.inv(A), np.array([F[2], M[0], M[1], M[2]]))
-    rpmd = np.sqrt(v)
-    rpmd = np.clip(rpmd, params['rpm_min'], params['rpm_max'])
     rpm_dot = params['motor_constant'] *(rpmd - rpm)
 
     return F_motor, M_motor, rpm_dot
@@ -142,14 +138,13 @@ def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
     f = F_actual
     F = np.array(
         [
-            [f*(np.cos(phi) * np.cos(psi) * np.sin(theta) + np.sin(theta)*np.sin(psi))],
-            [f*(np.cos(phi) * np.sin(psi) * np.sin(theta) + np.cos(psi)*np.sin(phi))],
+            [f*(np.cos(phi) * np.cos(psi) * np.sin(theta) + np.sin(phi)*np.sin(psi))],
+            [f*(np.cos(phi) * np.sin(psi) * np.sin(theta) - np.cos(psi)*np.sin(phi))],
             [f*np.cos(theta)*np.cos(phi) - m*g]
         ]
     )
     accs = (F/m).flatten()
     omegas = state[9:12]
-    # print('f',f, state[-4:-1])
     sub =  np.dot(params['inertia'] , omegas)
     alphas = np.dot(np.linalg.inv(params['inertia']), (M_actual))
 
@@ -268,7 +263,7 @@ def main(question):
         
         # Motor model
         [F_actual,M_actual,rpm_motor_dot] = motor_model(F_desired,M_desired,current_state,params)
-        print("F actual", F_actual, "F des " , F_desired)
+        # print("F actual", F_actual, "F des " , F_desired)
         # Get the change in state from the quadrotor dynamics
         time_int = tuple((time_vec[i],time_vec[i+1]))
 
