@@ -56,14 +56,15 @@ def position_controller(current_state,desired_state,params,question):
     accs = [0, 0, 0]
 
     for i in range(3):
-        accs[i] = -(xerror[i] * Kp[i] + xerrordot[i] * Kd[i])
+        accs[i] = (xerror[i] * Kp[i] + xerrordot[i] * Kd[i])
 
     accs = np.array(accs)   
     accs += desired_state["acc"]
     g = params['gravity']
-    # uff = 0 #TODO
-    F = params['mass'] * (g + accs[2])
-    return F, accs
+    # desired_state['acc'] = accs
+    F = params['mass'] * (accs + np.array([0, 0, g]))
+    # return F, desired_state['acc']
+    return F, desired_state['acc']
 
 
     # TO DO:
@@ -88,21 +89,12 @@ def motor_model(F,M,current_state,params):
 
     rpm_dot: Derivative of the RPM
     '''
-# params = {"mass": 0.770, "gravity": 9.80665, "arm_length": 0.1103, "motor_spread_angle": 0.925, \
-#         "thrust_coefficient": 8.07e-9, "moment_scale": 1.3719e-10, "motor_constant": 36.5, "rpm_min": 3000, \
-#             "rpm_max": 20000, "inertia": np.diag([0.0033,0.0033,0.005]), "COM_vertical_offset": 0.05}
-    
-#      current_state = {"pos":state_list[0:3],"vel":state_list[3:6],"rot":state_list[6:9], \
-#             "omega":state_list[9:12],"rpm":state_list[12:16]}
     rpm = current_state['rpm']
     ct = params['thrust_coefficient']
     cq = params['moment_scale']
     d = params['arm_length']
     rpm = np.array(rpm)
     
-    # F_motor = ct * (n**2)
-    # M_motor = cq * (n**2)
-
     A = np.array(
         [
             [ct, ct, ct, ct],
@@ -111,14 +103,14 @@ def motor_model(F,M,current_state,params):
             [-cq, cq, -cq, cq],
         ]
     )
-
+    rpm = np.clip(rpm,  params['rpm_min'], params['rpm_max'])
     vals = np.dot(A, (rpm**2))
     F_motor = vals[0]
     M_motor = vals[1:]
-    # clip
-    rpmd = np.sqrt(np.dot(np.linalg.inv(A), np.array([F, M[0], M[1], M[2]])))
-    rpmd = np.clip(rpmd, 0, 20000)
-    print(F)
+
+    v = np.dot(np.linalg.inv(A), np.array([F[2], M[0], M[1], M[2]]))
+    rpmd = np.sqrt(v)
+    rpmd = np.clip(rpmd, params['rpm_min'], params['rpm_max'])
     rpm_dot = params['motor_constant'] *(rpmd - rpm)
 
     return F_motor, M_motor, rpm_dot
@@ -142,36 +134,11 @@ def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
  
     state_dot: change in state
     '''
-    # TO DO:
-    # convert to inertial frame *R/M, we get acc
-    # alpha I = T
     phi, theta, psi = state[6:9]
-    # Rx = np.array(
-    #     [
-    #         [1, 0, 0],
-    #         [0, np.cos(phi), -np.sin(phi)],
-    #         [0, np.sin(phi), np.cos(phi)],
-    #     ]
-    # )
-    # Ry = np.array(
-    #     [
-    #         [np.cos(theta), 0, np.sin(theta)],
-    #         [0, 1, 0],
-    #         [-np.sin(theta), 0, np.cos(theta)],
-    #     ]
-    # )
-    # Rz = np.array(
-    #     [
-    #         [np.cos(psi), -np.sin(psi), 0],
-    #         [np.sin(psi), np.cos(phi), 0],
-    #         [0, 0, 1],
-    #     ]
-    # )
 
-    # Reb = np.dot(np.dot(Rz, Ry), Rx)
     m = params['mass']
     g = params['gravity']
-    # accs = np.dot(Reb, np.array([0, 0, (F_actual)]))/m - g
+
     f = F_actual
     F = np.array(
         [
@@ -180,10 +147,11 @@ def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
             [f*np.cos(theta)*np.cos(phi) - m*g]
         ]
     )
-    accs = F/m
-
-    rpms = state[9:12]**2
-    alphas = np.dot(np.linalg.inv(params['inertia']), (M_actual - np.dot(params['inertia'] , rpms)))
+    accs = (F/m).flatten()
+    omegas = state[9:12]
+    # print('f',f, state[-4:-1])
+    sub =  np.dot(params['inertia'] , omegas)
+    alphas = np.dot(np.linalg.inv(params['inertia']), (M_actual))
 
     # state: [
         # x,
@@ -201,7 +169,6 @@ def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
         # rpm
     # ]
 
-    statedot = np.zeros((16,))
     statedot = [
         state[3],
         state[4],
@@ -220,6 +187,7 @@ def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
         rpm_motor_dot[2],
         rpm_motor_dot[3],
     ]
+    statedot = np.array(statedot)
     return statedot
 
     
@@ -248,6 +216,7 @@ def main(question):
 
     # Create the state vector
     state = np.zeros((16,1))
+    # state[-4:-1] = 20000
     # state: [x,y,z,xdot,ydot,zdot,phi,theta,psi,phidot,thetadot,psidot,rpm]
 
     # Populate the state vector with the first waypoint 
@@ -289,17 +258,17 @@ def main(question):
         
 
         # Get desired acceleration from position controller
-        [F, desired_state["acc"]] = position_controller(current_state,desired_state,params,question)
+        [F_desired, desired_state["acc"]] = position_controller(current_state,desired_state,params,question)
         
         # Computes desired pitch and roll angles
         [desired_state["rot"],desired_state["omega"]] = attitude_by_flatness(desired_state,params)        
         
         # Get torques from attitude controller
-        M = attitude_controller(params,current_state,desired_state,question)
+        M_desired = attitude_controller(params,current_state,desired_state,question)
         
         # Motor model
-        [F_actual,M_actual,rpm_motor_dot] = motor_model(F,M,current_state,params)
-        
+        [F_actual,M_actual,rpm_motor_dot] = motor_model(F_desired,M_desired,current_state,params)
+        print("F actual", F_actual, "F des " , F_desired)
         # Get the change in state from the quadrotor dynamics
         time_int = tuple((time_vec[i],time_vec[i+1]))
 
@@ -309,6 +278,7 @@ def main(question):
         
         state_list = sol.y[:,-1]
         acc = (sol.y[3:6,-1]-sol.y[3:6,-2])/(sol.t[-1]-sol.t[-2])
+        # print(acc)
         # Update desired state matrix
         actual_desired_state_matrix[0:3,i+1] = desired_state["pos"]
         actual_desired_state_matrix[3:6,i+1] = desired_state["vel"]
@@ -324,7 +294,7 @@ def main(question):
     plot_state_error(actual_state_matrix,actual_desired_state_matrix,time_vec)
 
     # plot for 3d visualization
-    # plot_position_3d(actual_state_matrix,actual_desired_state_matrix)
+    plot_position_3d(actual_state_matrix,actual_desired_state_matrix)
     plt.show()
         
         

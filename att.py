@@ -28,8 +28,13 @@ def attitude_by_flatness(desired_state,params):
     )
     g = params['gravity']
     desired_state['rot'][:2] = (1/g)*np.dot(arr, desired_state['acc'][:2])
-
-    desired_state['omega'][:2] = (1/g)*np.dot(arr, (desired_state['acc'][:2])*desired_state['omega'][2])
+    arr1 = np.array(
+        [
+            [np.cos(psi), np.sin(psi)],
+            [-np.sin(psi), np.cos(psi)],
+        ]
+    )
+    desired_state['omega'][:2] = (1/g)*np.dot(arr1, (desired_state['acc'][:2])*desired_state['omega'][2])
 
     return desired_state['rot'], desired_state["omega"]
 
@@ -80,7 +85,7 @@ def attitude_controller(params, current_state,desired_state,question):
 
     errorheadddot = [0, 0, 0]
     for i in range(3):
-        errorheadddot[i] = -(terror[i] * Kp[i] + terrordot[i] * Kd[i])
+        errorheadddot[i] = (terror[i] * Kp[i] + terrordot[i] * Kd[i])
 
     errorheadddot = np.array(errorheadddot)
     M = np.dot(params['inertia'], errorheadddot)
