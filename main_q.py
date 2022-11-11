@@ -6,18 +6,15 @@ import matplotlib.pyplot as plt
 from controller import Controller
 from drone import Drone
 from plot import *
-from traj import *
-from stateManager import *
+from stateManager import StateManager
 
 def execute(params : dict, stateManager : StateManager = None):
 
     dt = params['dt'] # in secs
 
-    state = np.zeros((15, 1))
-    # [x, y, z, xdot, ydot, zdot, phi, theta, psi, phidot, thetadot, psidot, xacc, yacc, zacc]
 
     actual_desired_state_matrix = []
-    actual_state_matrix = [np.vstack((state[0:12], np.array([[0],[0],[0]]))).flatten()]
+    actual_state_matrix = []
 
     drone = Drone(params)
     controller = Controller(params)
@@ -27,33 +24,36 @@ def execute(params : dict, stateManager : StateManager = None):
     t = 0
     times = []
 
-    while True:
+    stateManager.setNextState(t, drone.state)
+
+    while not stateManager.isComplete(t):
 
         i += 1
         t += dt
         times.append(t)
 
 
-        desired_state = stateManager.getDesiredState(t)
-        if stateManager.isComplete():
-            stateManager.setNextState()
-        
-        current_state = {
-            "pos":state[0:3],
-            "vel":state[3:6],
-            "rot":state[6:9], 
-            "omega":state[9:12],
-            "rpm":state[12:16]
+        desired_state_dic = stateManager.getDesiredState(t, drone.state)
+        if not stateManager.isComplete(t):
+            break
+
+
+        current_state_dic = {
+            "pos":drone.state[0:3],
+            "vel":drone.state[3:6],
+            "rot":drone.state[6:9], 
+            "omega":drone.state[9:12],
+            "rpm":drone.state[12:16]
         }
         
 
-        F_desired, desired_state["acc"] = controller.position_controller(current_state, desired_state,question)
+        F_desired, desired_state_dic["acc"] = controller.position_controller(current_state_dic, desired_state_dic,question)
 
-        desired_state["rot"],desired_state["omega"] = controller.attitude_by_flatness(desired_state)        
+        desired_state_dic["rot"],desired_state_dic["omega"] = controller.attitude_by_flatness(desired_state_dic)        
 
-        M_desired = controller.attitude_controller(current_state,desired_state,question)
+        M_desired = controller.attitude_controller(current_state_dic,desired_state_dic,question)
 
-        sol = drone.step(F_desired,M_desired,current_state,params)
+        sol = drone.step(F_desired,M_desired,current_state_dic,params)
 
         # we need to set the accelerations ourselves because we are setting our snap to be zero.
         # use first order approximations
@@ -65,11 +65,11 @@ def execute(params : dict, stateManager : StateManager = None):
         actual_state_matrix.append(state_list.copy())
 
         temp  = np.zeros((15, 1))
-        temp[0:3,i+1] = desired_state["pos"]
-        temp[3:6,i+1] = desired_state["vel"]
-        temp[6:9,i+1] = desired_state["rot"]
-        temp[9:12,i+1] = desired_state["omega"]
-        temp[12:15,i+1] = desired_state["acc"]
+        temp[0:3,i+1] = desired_state_dic["pos"]
+        temp[3:6,i+1] = desired_state_dic["vel"]
+        temp[6:9,i+1] = desired_state_dic["rot"]
+        temp[9:12,i+1] = desired_state_dic["omega"]
+        temp[12:15,i+1] = desired_state_dic["acc"]
         actual_desired_state_matrix.append(temp.copy())
 
         
@@ -92,7 +92,7 @@ def main(params):
     outs = execute(params, manager)
 
 
-    plot(*outs)
+    # plot(*outs)
 
         
 if __name__ == '__main__':

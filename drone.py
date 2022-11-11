@@ -6,6 +6,7 @@ class Drone:
 
     def __init__(self, params):
         self.params = params
+        self.state = np.zeros((15, 1))
 
     @staticmethod
     def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
@@ -82,7 +83,7 @@ class Drone:
         return statedot
 
     
-    def motor_model(self, F,M,current_state):
+    def motor_model(self, F,M):
 
         '''
         Input parameters"
@@ -102,7 +103,7 @@ class Drone:
         rpm_dot: Derivative of the RPM
         '''
         params = self.params
-        rpm = current_state['rpm']
+        rpm = self.state['rpm']
         ct = params['thrust_coefficient']
         cq = params['moment_scale']
         d = params['arm_length']
@@ -131,8 +132,8 @@ class Drone:
         return F_motor, M_motor, rpm_dot
 
 
-    def step(self, F_desired, M_desired, current_state, ):
-        
+    def step(self, F_desired, M_desired,  ):
+        current_state = self.state
         [F_actual,M_actual,rpm_motor_dot] = self.motor_model(F_desired,M_desired,current_state)
 
         sol = solve_ivp(

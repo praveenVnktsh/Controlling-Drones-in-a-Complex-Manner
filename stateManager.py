@@ -1,16 +1,10 @@
 from enum import Enum
+from utils import State
 
 from traj import TrajectoryGenerator
 
 
-class State(Enum):
 
-    COMPLETE = 0
-    IDLE = 1
-    TRACK = 2
-    TAKEOFF = 3
-    HOVER = 4
-    LAND = 5
 
 class StateManager():
 
@@ -22,13 +16,14 @@ class StateManager():
         self.planner : TrajectoryGenerator = TrajectoryGenerator(params)
 
     def isComplete(self, t):
-
-        if self.state == State.COMPLETE or t >= self.planner.times[-1]:
+        print(self.state, self.planner.complete)
+        if self.state == State.COMPLETE or self.planner.complete:
             self.state = State.COMPLETE
             return True
+        return False
 
 
-    def setNextState(self):
+    def setNextState(self, t, curstatevec):
 
         self.prevstate = self.state
         if self.question in [2, 3]:
@@ -55,6 +50,8 @@ class StateManager():
                 self.state = State.LAND
             elif self.state ==  State.LAND:
                 self.state = State.IDLE
+        print("State Change |", self.prevstate, '->', self.state)
+        self.planner.planTrajectory(t, curstatevec, self.state, )
 
 
 

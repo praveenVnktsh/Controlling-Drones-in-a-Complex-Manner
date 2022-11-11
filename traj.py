@@ -67,8 +67,18 @@ class TrajectoryGenerator():
         if ind > len(self.trajectory):
             self.complete = True
             return None
+
+        traj = self.trajectory[ind]
+        desired_state_dic = {
+            "pos":  traj[0:3],
+            "vel":  traj[3:6],
+            "rot":  traj[6:9], 
+            "omega":traj[9:12],
+            "rpm":  traj[12:16]
+        }
         
-        return self.trajectory[ind]
+        
+        return desired_state_dic
 
     def planTrajectory(self, curtime, curstatevec = None, state = None):
         '''
@@ -79,7 +89,7 @@ class TrajectoryGenerator():
 
         Stores generated trajectories in class.
         '''
-      
+        print("Planning Trajectory for ", end = '')
         self.complete = False
 
         self.trajectory = []
@@ -88,6 +98,7 @@ class TrajectoryGenerator():
         desstatevec = np.zeros_like(curstatevec)
         desstatevec[:3] = curstatevec[:3]
         desstatevec[8] = curstatevec[8]
+
         if state == State.IDLE:
             for i in np.arange(0, 2, self.dt):
                 self.trajectory.append(desstatevec.copy())
@@ -99,6 +110,7 @@ class TrajectoryGenerator():
                 self.times.append(curtime + i)
 
         elif state == State.TAKEOFF:
+            print(state)
             for i in np.arange(0, 4, self.dt):
                 vec = desstatevec.copy() 
                 vec[2] = i/4.
