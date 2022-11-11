@@ -187,28 +187,21 @@ def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
 
     
 
-def main(question):
+def followWaypoints(waypoints, waypoint_times):
 
-    # Set up quadrotor physical parameters
     params = {"mass": 0.770, "gravity": 9.80665, "arm_length": 0.1103, "motor_spread_angle": 0.925, \
         "thrust_coefficient": 8.07e-9, "moment_scale": 1.3719e-10, "motor_constant": 36.5, "rpm_min": 3000, \
             "rpm_max": 20000, "inertia": np.diag([0.0033,0.0033,0.005]), "COM_vertical_offset": 0.05,
             'kpatt': [190, 198, 80], 'kdatt' : [30,30,17.88], 'kppos':[17, 17, 20], 'kdpos': [6.6, 6.6, 9], 'question' : question      
-            }
+    }
+
     
-    # Get the waypoints for this specific question
-    [waypoints, waypoint_times] = lookup_waypoints(question)
-    # waypoints are of the form [x, y, z, yaw]
-    # waypoint_times are the seconds you should be at each respective waypoint
-    # make sure the simulation parameters below allow you to get to all points
 
     # Set the simualation parameters
-    time_initial = 0
-    time_final = 10
     time_step = 0.005 # in secs
     # 0.005 sec is a reasonable time step for this system
     
-    time_vec = np.arange(time_initial, time_final, time_step).tolist()
+    time_vec = np.arange(0, max(waypoint_times) + 2, time_step).tolist()
     max_iteration = len(time_vec)
 
     # Create the state vector
@@ -216,14 +209,14 @@ def main(question):
     # state[-4:-1] = 20000
     # state: [x,y,z,xdot,ydot,zdot,phi,theta,psi,phidot,thetadot,psidot,rpm]
 
-    # Populate the state vector with the first waypoint 
+    # Populate the state vector with thefirst waypoint 
     # (assumes robot is at first waypoint at the initial time)
     state[0] = waypoints[0,0]
     state[1] = waypoints[1,0]
     state[2] = waypoints[2,0]
     state[8] = waypoints[3,0]
 
-    #Create a trajectory consisting of desired state at each time step
+    # Create a trajectory consisting of desired state at each time step
     # Some aspects of this state we can plan in advance, some will be filled during the loop
     trajectory_matrix = trajectory_planner(question, waypoints, max_iteration, waypoint_times, time_step)
     # [x, y, z, xdot, ydot, zdot, phi, theta, psi, phidot, thetadot, psidot, xacc, yacc, zacc]
@@ -288,12 +281,24 @@ def main(question):
         actual_state_matrix[12:15,i+1] = acc
         
     # plot for values and errors
-    plot_state_error(actual_state_matrix,actual_desired_state_matrix,time_vec, params)
+    return actual_state_matrix, actual_desired_state_matrix, time_vec, params
 
-    # plot for 3d visualization
+def plot(actual_state_matrix, actual_desired_state_matrix, time_vec, params):
+
+    plot_state_error(actual_state_matrix,actual_desired_state_matrix,time_vec, params)
     plot_position_3d(actual_state_matrix,actual_desired_state_matrix, params)
     plt.show()
+
+
         
+def main(question):
+    
+    if question in [2, 3]:
+        outs = followWaypoints(*lookup_waypoints(question))
+
+
+    plot(*outs)
+
         
 if __name__ == '__main__':
     '''
@@ -304,7 +309,6 @@ if __name__ == '__main__':
     STRUCTURE AT A MINIMUM.
     '''
     # run the file with command "python3 main.py question_number" in the terminal
-    # question = int(sys.argv[1])
-    question = 3
+    question = int(sys.argv[1])
+    main(question)    
     
-    main(question)
