@@ -75,8 +75,8 @@ def attitude_controller(params, current_state,desired_state,question):
     Kppsi = 80
     Kdpsi = 17.88
 
-    Kp = [Kpphi, Kptheta, Kppsi]
-    Kd = [Kdphi,Kdtheta,Kdpsi]
+    Kp = params['kpatt']
+    Kd = params['kdatt']
 
 
     terror = desired_state['rot'] - current_state['rot']

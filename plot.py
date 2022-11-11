@@ -1,7 +1,7 @@
 
 import matplotlib.pyplot as plt
 
-def plot_state_error(state,state_des,time_vector):
+def plot_state_error(state,state_des,time_vector, params):
 
     # actual states
     pos = state[0:3,:]
@@ -83,6 +83,14 @@ def plot_state_error(state,state_des,time_vector):
     axs[4,2].set(xlabel = 'time(s)', ylabel = 'acc_z (m/s2)')
 
     fig.tight_layout(pad = 0.005)
+    filename = ''
+    for i in range(3):
+        filename += str(round(params["kppos"][i]) * 100)+ '_'
+        filename += str(round(params["kdpos"][i]) * 100)+ '_'
+        filename += str(round(params["kpatt"][i]) * 100)+ '_'
+        filename += str(round(params["kdatt"][i]) * 100)+ '_'
+
+    plt.savefig(f'outputs/errors_{params["question"]}_{filename}.png')
 
     # plot values
     fig1 = plt.figure(2)
@@ -144,9 +152,11 @@ def plot_state_error(state,state_des,time_vector):
 
     fig1.tight_layout(pad=0.05)
 
+    plt.savefig(f'outputs/vals_{params["question"]}_{filename}.png')
+
 # Helper to visualize positions for the flight of the quadrotor
 
-def plot_position_3d(state, state_des):
+def plot_position_3d(state, state_des, params):
     pos = state[0:3,:]
     pos_des = state_des[0:3,:]
     fig = plt.figure(3)
@@ -166,4 +176,12 @@ def plot_position_3d(state, state_des):
     ax.axes.set_xlim3d(left=-.5, right=.5)
     ax.axes.set_ylim3d(bottom=-.5, top=.5)
     ax.axes.set_zlim3d(bottom=0, top=.5)
+
+    filename = ''
+    for i in range(3):
+        filename += str(round(params["kppos"][i]) * 100)+ '_'
+        filename += str(round(params["kdpos"][i]) * 100)+ '_'
+        filename += str(round(params["kpatt"][i]) * 100)+ '_'
+        filename += str(round(params["kdatt"][i]) * 100)+ '_'
+    plt.savefig(f'outputs/pos_{params["question"]}_{filename}.png')
 

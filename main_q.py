@@ -45,8 +45,8 @@ def position_controller(current_state,desired_state,params,question):
     acc: will be stored as desired_state["acc"] = [xdotdot, ydotdot, zdotdot]
     '''
 
-    Kp = [17, 17, 20]
-    Kd = [6.6, 6.6, 9]
+    Kp = params['kppos']
+    Kd = params['kdpos']
 
 
     xerror = desired_state['pos'] - current_state['pos']
@@ -192,7 +192,9 @@ def main(question):
     # Set up quadrotor physical parameters
     params = {"mass": 0.770, "gravity": 9.80665, "arm_length": 0.1103, "motor_spread_angle": 0.925, \
         "thrust_coefficient": 8.07e-9, "moment_scale": 1.3719e-10, "motor_constant": 36.5, "rpm_min": 3000, \
-            "rpm_max": 20000, "inertia": np.diag([0.0033,0.0033,0.005]), "COM_vertical_offset": 0.05}
+            "rpm_max": 20000, "inertia": np.diag([0.0033,0.0033,0.005]), "COM_vertical_offset": 0.05,
+            'kpatt': [190, 198, 80], 'kdatt' : [30,30,17.88], 'kppos':[17, 17, 20], 'kdpos': [6.6, 6.6, 9], 'question' : question      
+            }
     
     # Get the waypoints for this specific question
     [waypoints, waypoint_times] = lookup_waypoints(question)
@@ -286,10 +288,10 @@ def main(question):
         actual_state_matrix[12:15,i+1] = acc
         
     # plot for values and errors
-    plot_state_error(actual_state_matrix,actual_desired_state_matrix,time_vec)
+    plot_state_error(actual_state_matrix,actual_desired_state_matrix,time_vec, params)
 
     # plot for 3d visualization
-    plot_position_3d(actual_state_matrix,actual_desired_state_matrix)
+    plot_position_3d(actual_state_matrix,actual_desired_state_matrix, params)
     plt.show()
         
         
