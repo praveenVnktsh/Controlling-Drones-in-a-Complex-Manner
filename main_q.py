@@ -9,17 +9,11 @@ from plot import *
 from traj import *
 from stateManager import *
 
-def execute(params, stateManager : StateManager = None):
+def execute(params : dict, stateManager : StateManager = None):
 
     dt = params['dt'] # in secs
 
     state = np.zeros((15, 1))
-
-    # state[0] = waypoints[0]
-    # state[1] = waypoints[1]
-    # state[2] = waypoints[2]
-    # state[8] = waypoints[3]
-
     # [x, y, z, xdot, ydot, zdot, phi, theta, psi, phidot, thetadot, psidot, xacc, yacc, zacc]
 
     actual_desired_state_matrix = []
@@ -27,27 +21,38 @@ def execute(params, stateManager : StateManager = None):
 
     drone = Drone(params)
     controller = Controller(params)
-    planner = TrajectoryGenerator(params)
+
     i = 0
 
     t = 0
     times = []
-    while not stateManager.isComplete():
+
+    while True:
+
         i += 1
         t += dt
         times.append(t)
 
 
         desired_state = stateManager.getDesiredState(t)
+        if stateManager.isComplete():
+            stateManager.setNextState()
         
-        current_state = {"pos":state[0:3],"vel":state[3:6],"rot":state[6:9], \
-            "omega":state[9:12],"rpm":state[12:16]}
+        current_state = {
+            "pos":state[0:3],
+            "vel":state[3:6],
+            "rot":state[6:9], 
+            "omega":state[9:12],
+            "rpm":state[12:16]
+        }
         
 
         F_desired, desired_state["acc"] = controller.position_controller(current_state, desired_state,question)
+
         desired_state["rot"],desired_state["omega"] = controller.attitude_by_flatness(desired_state)        
 
         M_desired = controller.attitude_controller(current_state,desired_state,question)
+
         sol = drone.step(F_desired,M_desired,current_state,params)
 
         # we need to set the accelerations ourselves because we are setting our snap to be zero.
@@ -83,7 +88,7 @@ def plot(actual_state_matrix, actual_desired_state_matrix, time_vec, params):
 
         
 def main(params):
-    manager = StateManager(params['question'])
+    manager = StateManager(params)
     outs = execute(params, manager)
 
 
