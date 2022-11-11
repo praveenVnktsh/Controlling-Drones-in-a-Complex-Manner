@@ -20,6 +20,27 @@ def lookup_waypoints(question):
     if question == 2:
         waypoints = np.array([[0, 0.1, 0.2, 0.3],[0, 0, 0, 0], [0.5, 0.5, 0.5, 0.5], [0,0,0,0]])
         waypoint_times = np.array([0,2,4,6])
+    elif question == 3:
+        print("Computing waypoints!")
+        timeduration = 4
+        zs = []
+        times = []
+        a = 2/(timeduration**2)
+        
+        for t in np.arange(0, timeduration, 0.1):
+            zs.append(0.5 * a * t**2)
+            times.append(t)
+
+
+        zs1 = zs[::-1]
+        zs = np.hstack((zs, zs1))
+        ys = np.zeros_like(zs)
+        xs = np.zeros_like(zs)
+        times = np.hstack((times, np.array(times) + timeduration + 2 ))
+
+
+        waypoints = np.array([xs, ys, zs, np.zeros_like(zs)])
+        waypoint_times = np.array(times)
     return([waypoints, waypoint_times])
 
 def trajectory_planner(question, waypoints, max_iteration, waypoint_times, time_step):
@@ -56,5 +77,29 @@ def trajectory_planner(question, waypoints, max_iteration, waypoint_times, time_
 
         trajectory_state[0:3, i] = waypoints[0:3, current_waypoint_number]
         trajectory_state[8,i] = waypoints[3, current_waypoint_number]
+
+    # elif question == 3:
+    #     timeduration = 5
+    #     a = 2/(timeduration**2)
+
+    #     xs = []
+    #     ys = []
+    #     zs = []
+    #     times = []
+        
+    #     for t in np.arange(0, timeduration, 0.005):
+    #         xs.append(0)
+    #         ys.append(0)
+    #         zs.append(0.5*a*t)
+    #         times.append(t)
+
+    #     for t in np.arange(timeduration + 2, 2*timeduration + 2, 0.005):
+    #         xs.append(0)
+    #         ys.append(0)
+    #         zs.append(1 - 0.5*a*t)
+    #         times.append(t + timeduration)
+
+    #     waypoints = np.array([xs, ys, zs])
+    #     waypoint_times = np.array(times)
     
     return (trajectory_state)
