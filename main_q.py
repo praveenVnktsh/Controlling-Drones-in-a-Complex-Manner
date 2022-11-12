@@ -16,8 +16,9 @@ def execute(params : dict, stateManager : StateManager = None):
 
     actual_desired_state_matrix = []
     actual_state_matrix = []
-
-    drone = Drone(params)
+    initState = np.zeros((16,))
+    # initState[2] = 0.5
+    drone = Drone(params, initState =initState)
     controller = Controller(params)
 
     i = 0
@@ -26,14 +27,13 @@ def execute(params : dict, stateManager : StateManager = None):
     times = []
 
     stateManager.setNextState(t, drone.state)
+    
 
     while not stateManager.isComplete():
 
         i += 1
         t += dt
         
-
-
         desired_state_dic = stateManager.getDesiredState(t, drone.state)
 
         if stateManager.isComplete():
@@ -46,6 +46,10 @@ def execute(params : dict, stateManager : StateManager = None):
             "omega":drone.state[9:12].squeeze(),
             "rpm":drone.state[12:16].squeeze()
         }
+
+        # print(current_state_dic)
+        # if i == 2:
+        #     exit()
         
 
         F_desired, desired_state_dic['acc'] = controller.position_controller(current_state_dic, desired_state_dic)
@@ -53,12 +57,12 @@ def execute(params : dict, stateManager : StateManager = None):
 
         M_desired = controller.attitude_controller(current_state_dic,desired_state_dic)
         # print(M_desired)
-        sol = drone.step(F_desired,M_desired, current_state_dic)
+        sol = drone.step(F_desired, M_desired)
 
         # we need to set the accelerations ourselves because we are setting our snap to be zero.
         # use first order approximations
 
-        state_list = sol.y[:,-1]
+        state_list = sol.y[:,-1].copy()
         acc = (sol.y[3:6,-1]-sol.y[3:6,-2])/(sol.t[-1]-sol.t[-2])
 
         state_list[12:15] = acc
@@ -70,18 +74,18 @@ def execute(params : dict, stateManager : StateManager = None):
         temp[6:9] = desired_state_dic["rot"].reshape(-1, 1)
         temp[9:12] = desired_state_dic["omega"].reshape(-1, 1)
         temp[12:15] = desired_state_dic["acc"].reshape(-1, 1)
+        
         actual_desired_state_matrix.append(temp.copy())
 
         times.append(t)
 
-        if stateManager.state != State.TAKEOFF:
-            break
+        # if stateManager.state != State.TAKEOFF:
+        #     break
 
-        
+    print("Statemanager isComplete", stateManager.isComplete())
         
     actual_desired_state_matrix = np.array(actual_desired_state_matrix).T.squeeze()
     actual_state_matrix = np.array(actual_state_matrix).T.squeeze()
-    print(actual_state_matrix.shape, actual_desired_state_matrix.shape)
     time_vec = np.array(times)
     return actual_state_matrix, actual_desired_state_matrix, time_vec
 

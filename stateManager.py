@@ -3,7 +3,7 @@ from utils import State
 
 from traj import TrajectoryGenerator
 
-
+import numpy as np
 
 
 class StateManager():
@@ -16,7 +16,7 @@ class StateManager():
         self.planner : TrajectoryGenerator = TrajectoryGenerator(params)
 
     def isComplete(self):
-        if self.state == State.COMPLETE or self.planner.complete:
+        if self.state == State.COMPLETE:
             self.state = State.COMPLETE
             return True
         return False
@@ -24,43 +24,37 @@ class StateManager():
 
     def setNextState(self, t, curstatevec):
 
-        self.prevstate = self.state
+        
+        if self.question  == 1:
+            if self.state == State.IDLE:
+                self.state = State.HOVER1
+            elif self.state == State.HOVER1:
+                self.state = State.COMPLETE
+
         if self.question in [2, 3]:
-            if self.state == State.IDLE and self.prevstate == State.IDLE:
+            if self.state == State.IDLE:
                 self.state = State.TRACK
             elif self.state == State.TRACK:
                 self.state = State.COMPLETE
 
-            return
-
-         
         if self.question in [4]:
-            
+            self.prevstate = self.state
+            self.state = State((self.state.value + 1) % 7)
 
-            if(self.state == State.IDLE):
-                self.state = State.TAKEOFF
-            elif self.state == State.TAKEOFF:
-                self.state = State.HOVER
-            elif self.state == State.HOVER and self.prevstate == State.TAKEOFF:
-                self.state = State.TRACK
-            elif self.state == State.TRACK:
-                self.state = State.HOVER
-            elif self.state == State.HOVER and self.prevstate == State.TRACK:
-                self.state = State.LAND
-            elif self.state ==  State.LAND:
-                self.state = State.IDLE
+        
         print("State Change |", self.prevstate, '->', self.state)
         self.planner.planTrajectory(t, curstatevec, self.state, )
 
 
 
     def getDesiredState(self, t, curstatevec):
-
-        a = self.planner.getDesiredState(t)
-        if  a is None:
-            self.setNextState( t, curstatevec)
-            self.planner.planTrajectory(t, curstatevec, self.state, )
+        if np.linalg.norm(self.planner.trajectory[-1][:3] - curstatevec[:3]) < 0.05:
+            print("REACHED")
+            self.setNextState(t, curstatevec)
+        a = None        
+        if not self.isComplete():
             a = self.planner.getDesiredState(t)
+            
 
         return a
 

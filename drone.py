@@ -4,9 +4,9 @@ from scipy.integrate import solve_ivp
 
 class Drone:
 
-    def __init__(self, params):
+    def __init__(self, params, initState = np.zeros((16,))):
         self.params = params
-        self.state = np.zeros((16,))
+        self.state = initState
 
     @staticmethod
     def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
@@ -82,7 +82,7 @@ class Drone:
         return statedot
 
     
-    def motor_model(self, F,M, current_state_dic):
+    def motor_model(self, F,M):
 
         '''
         Input parameters"
@@ -102,7 +102,7 @@ class Drone:
         rpm_dot: Derivative of the RPM
         '''
         params = self.params
-        rpm = current_state_dic['rpm'].squeeze()
+        rpm = self.state[12:]
         ct = params['thrust_coefficient']
         cq = params['moment_scale']
         d = params['arm_length']
@@ -118,28 +118,24 @@ class Drone:
             ]
         )
         
-        print(F[2], M)
         rpmd = np.sqrt(np.dot(np.linalg.inv(A), np.array([F[2], M[0], M[1], M[2]])))
         rpmd = np.clip(rpmd, params['rpm_min'], params['rpm_max'])
-
         rpm = np.clip(rpm,  params['rpm_min'], params['rpm_max'])
         vals = np.dot(A, np.square(rpm))
         rpm_dot = params['motor_constant'] *(rpmd - rpm)
-        self.state[12:] = rpm
         F_motor = vals[0]
         M_motor = vals[1:]
 
         return F_motor, M_motor, rpm_dot
 
 
-    def step(self, F_desired, M_desired, current_state_dic ):
-        current_state = self.state
-        [F_actual,M_actual,rpm_motor_dot] = self.motor_model(F_desired,M_desired,current_state_dic)
+    def step(self, F_desired, M_desired ):
+        [F_actual,M_actual,rpm_motor_dot] = self.motor_model(F_desired,M_desired)
 
         sol = solve_ivp(
             self.dynamics, 
             (0, self.params['dt']), 
-            current_state,
+            self.state,
             args=(self.params,F_actual,M_actual,rpm_motor_dot),)
         self.state = sol.y[:,-1]
 

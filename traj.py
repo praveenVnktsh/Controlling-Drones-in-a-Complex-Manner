@@ -16,10 +16,10 @@ class TrajectoryGenerator():
         self.complete = False
 
     def getDesiredState(self, t):
-        ind = int((t - self.starttime)/self.dt)
-        if ind > len(self.trajectory) - 1:
-            self.complete = True
-            return None
+        ind = max(0, min(len(self.trajectory) - 1, int((t - self.starttime)/self.dt)))
+        # if ind > len(self.trajectory) - 1:
+        #     self.complete = True
+        #     return None
 
         traj = self.trajectory[ind]
         desired_state_dic = {
@@ -43,6 +43,7 @@ class TrajectoryGenerator():
 
         Stores generated trajectories in class.
         '''
+
         print("Planning Trajectory for", state,)
         self.complete = False
 
@@ -53,15 +54,14 @@ class TrajectoryGenerator():
         desstatevec[:3] = curstatevec[:3]
 
         desstatevec[8] = curstatevec[8]
-        print(desstatevec)
 
         if state == State.IDLE:
             for i in np.arange(0, 2, self.dt):
                 self.trajectory.append(desstatevec.copy())
                 self.times.append(curtime + i)
 
-        elif state == State.HOVER:
-            for i in np.arange(0, 2, self.dt):
+        elif state in [State.HOVER1, State.HOVER2]:
+            for i in np.arange(0, 1, self.dt):
                 self.trajectory.append(desstatevec.copy())
                 self.times.append(curtime + i)
 
@@ -70,6 +70,7 @@ class TrajectoryGenerator():
             for i in np.arange(0, duration, self.dt):
                 vec = desstatevec.copy() 
                 vec[2] = i/duration
+                # vec[5] = 1.0/duration
                 self.trajectory.append(vec.copy())
                 self.times.append(curtime + i)
 
@@ -78,6 +79,7 @@ class TrajectoryGenerator():
             for i in np.arange(0, duration, self.dt):
                 vec = desstatevec.copy() 
                 vec[0] = 0.3 * (i/duration)
+
                 vec[5] = 0.3/duration
                 self.trajectory.append(vec.copy())
                 self.times.append(curtime + i)
@@ -94,7 +96,7 @@ class TrajectoryGenerator():
 
         self.trajectory = np.array(self.trajectory).squeeze()
         self.times = np.array(self.times)
+        self.starttime = curtime
 
-        print(self.trajectory.shape, self.times.shape)
 
         # height of 15 for: [x, y, z, xdot, ydot, zdot, phi, theta, psi, phidot, thetadot, psidot, xacc, yacc, zacc]

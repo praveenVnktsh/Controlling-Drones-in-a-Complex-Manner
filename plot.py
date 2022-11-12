@@ -175,7 +175,7 @@ def plot_position_3d(state, state_des, params):
 
     ax.axes.set_xlim3d(left=-.5, right=.5)
     ax.axes.set_ylim3d(bottom=-.5, top=.5)
-    ax.axes.set_zlim3d(bottom=0, top=.5)
+    ax.axes.set_zlim3d(bottom=0, top=1.5)
 
     filename = ''
     for i in range(3):
