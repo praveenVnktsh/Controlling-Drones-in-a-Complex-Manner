@@ -6,7 +6,7 @@ class Drone:
 
     def __init__(self, params):
         self.params = params
-        self.state = np.zeros((15, 1))
+        self.state = np.zeros((16,))
 
     @staticmethod
     def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
@@ -60,7 +60,6 @@ class Drone:
             # psidot,
             # rpm
         # ]
-
         statedot = [
             state[3], 
             state[4], 
@@ -83,7 +82,7 @@ class Drone:
         return statedot
 
     
-    def motor_model(self, F,M):
+    def motor_model(self, F,M, current_state_dic):
 
         '''
         Input parameters"
@@ -103,10 +102,11 @@ class Drone:
         rpm_dot: Derivative of the RPM
         '''
         params = self.params
-        rpm = self.state['rpm']
+        rpm = current_state_dic['rpm'].squeeze()
         ct = params['thrust_coefficient']
         cq = params['moment_scale']
         d = params['arm_length']
+
         rpm = np.array(rpm)
         
         A = np.array(
@@ -118,28 +118,29 @@ class Drone:
             ]
         )
         
-
+        print(F[2], M)
         rpmd = np.sqrt(np.dot(np.linalg.inv(A), np.array([F[2], M[0], M[1], M[2]])))
         rpmd = np.clip(rpmd, params['rpm_min'], params['rpm_max'])
 
         rpm = np.clip(rpm,  params['rpm_min'], params['rpm_max'])
         vals = np.dot(A, np.square(rpm))
+        rpm_dot = params['motor_constant'] *(rpmd - rpm)
+        self.state[12:] = rpm
         F_motor = vals[0]
         M_motor = vals[1:]
-
-        rpm_dot = params['motor_constant'] *(rpmd - rpm)
 
         return F_motor, M_motor, rpm_dot
 
 
-    def step(self, F_desired, M_desired,  ):
+    def step(self, F_desired, M_desired, current_state_dic ):
         current_state = self.state
-        [F_actual,M_actual,rpm_motor_dot] = self.motor_model(F_desired,M_desired,current_state)
+        [F_actual,M_actual,rpm_motor_dot] = self.motor_model(F_desired,M_desired,current_state_dic)
 
         sol = solve_ivp(
             self.dynamics, 
             (0, self.params['dt']), 
             current_state,
             args=(self.params,F_actual,M_actual,rpm_motor_dot),)
+        self.state = sol.y[:,-1]
 
         return sol

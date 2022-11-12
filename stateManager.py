@@ -15,8 +15,7 @@ class StateManager():
         self.question = params['question']
         self.planner : TrajectoryGenerator = TrajectoryGenerator(params)
 
-    def isComplete(self, t):
-        print(self.state, self.planner.complete)
+    def isComplete(self):
         if self.state == State.COMPLETE or self.planner.complete:
             self.state = State.COMPLETE
             return True
@@ -59,7 +58,7 @@ class StateManager():
 
         a = self.planner.getDesiredState(t)
         if  a is None:
-            self.setNextState()
+            self.setNextState( t, curstatevec)
             self.planner.planTrajectory(t, curstatevec, self.state, )
             a = self.planner.getDesiredState(t)
 

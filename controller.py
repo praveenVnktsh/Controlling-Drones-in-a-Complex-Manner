@@ -30,7 +30,10 @@ class Controller():
             ]
         )
         g = params['gravity']
+
+
         desired_state['rot'][:2] = (1/g)*np.dot(arr, desired_state['acc'][:2])
+
         arr1 = np.array(
             [
                 [np.cos(psi), np.sin(psi)],
@@ -38,11 +41,10 @@ class Controller():
             ]
         )
         desired_state['omega'][:2] = (1/g)*np.dot(arr1, (desired_state['acc'][:2])*desired_state['omega'][2])
-
         return desired_state['rot'], desired_state["omega"]
 
 
-    def attitude_controller(self, current_state,desired_state,question):
+    def attitude_controller(self, current_state,desired_state):
         '''
         Input parameters
         
@@ -80,7 +82,7 @@ class Controller():
         errorheadddot = [0, 0, 0]
         for i in range(3):
             errorheadddot[i] = (terror[i] * Kp[i] + terrordot[i] * Kd[i])
-
+        
         errorheadddot = np.array(errorheadddot)
         M = np.dot(params['inertia'], errorheadddot)
 
@@ -123,8 +125,9 @@ class Controller():
             accs[i] = (xerror[i] * Kp[i] + xerrordot[i] * Kd[i])
 
         accs = np.array(accs)   
+        # print(current_state['pos'], current_state['vel'], desired_state['vel'])
+
 
         g = params['gravity']
         F = params['mass'] * (accs + desired_state["acc"] + np.array([0, 0, g]))
-        desired_state["acc"] = accs
         return F, accs

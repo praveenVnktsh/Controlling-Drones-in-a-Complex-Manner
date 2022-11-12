@@ -7,6 +7,7 @@ from controller import Controller
 from drone import Drone
 from plot import *
 from stateManager import StateManager
+from utils import State
 
 def execute(params : dict, stateManager : StateManager = None):
 
@@ -26,34 +27,33 @@ def execute(params : dict, stateManager : StateManager = None):
 
     stateManager.setNextState(t, drone.state)
 
-    while not stateManager.isComplete(t):
+    while not stateManager.isComplete():
 
         i += 1
         t += dt
-        times.append(t)
+        
 
 
         desired_state_dic = stateManager.getDesiredState(t, drone.state)
-        if not stateManager.isComplete(t):
+
+        if stateManager.isComplete():
             break
 
-
         current_state_dic = {
-            "pos":drone.state[0:3],
-            "vel":drone.state[3:6],
-            "rot":drone.state[6:9], 
-            "omega":drone.state[9:12],
-            "rpm":drone.state[12:16]
+            "pos":drone.state[0:3].squeeze(),
+            "vel":drone.state[3:6].squeeze(),
+            "rot":drone.state[6:9].squeeze(), 
+            "omega":drone.state[9:12].squeeze(),
+            "rpm":drone.state[12:16].squeeze()
         }
         
 
-        F_desired, desired_state_dic["acc"] = controller.position_controller(current_state_dic, desired_state_dic,question)
-
+        F_desired, desired_state_dic['acc'] = controller.position_controller(current_state_dic, desired_state_dic)
         desired_state_dic["rot"],desired_state_dic["omega"] = controller.attitude_by_flatness(desired_state_dic)        
 
-        M_desired = controller.attitude_controller(current_state_dic,desired_state_dic,question)
-
-        sol = drone.step(F_desired,M_desired,current_state_dic,params)
+        M_desired = controller.attitude_controller(current_state_dic,desired_state_dic)
+        # print(M_desired)
+        sol = drone.step(F_desired,M_desired, current_state_dic)
 
         # we need to set the accelerations ourselves because we are setting our snap to be zero.
         # use first order approximations
@@ -62,20 +62,26 @@ def execute(params : dict, stateManager : StateManager = None):
         acc = (sol.y[3:6,-1]-sol.y[3:6,-2])/(sol.t[-1]-sol.t[-2])
 
         state_list[12:15] = acc
-        actual_state_matrix.append(state_list.copy())
+        actual_state_matrix.append(state_list[:15].copy())
 
         temp  = np.zeros((15, 1))
-        temp[0:3,i+1] = desired_state_dic["pos"]
-        temp[3:6,i+1] = desired_state_dic["vel"]
-        temp[6:9,i+1] = desired_state_dic["rot"]
-        temp[9:12,i+1] = desired_state_dic["omega"]
-        temp[12:15,i+1] = desired_state_dic["acc"]
+        temp[0:3] = desired_state_dic["pos"].reshape(-1, 1)
+        temp[3:6] = desired_state_dic["vel"].reshape(-1, 1)
+        temp[6:9] = desired_state_dic["rot"].reshape(-1, 1)
+        temp[9:12] = desired_state_dic["omega"].reshape(-1, 1)
+        temp[12:15] = desired_state_dic["acc"].reshape(-1, 1)
         actual_desired_state_matrix.append(temp.copy())
+
+        times.append(t)
+
+        if stateManager.state != State.TAKEOFF:
+            break
 
         
         
-    actual_desired_state_matrix = np.array(actual_desired_state_matrix).T
-    actual_state_matrix = np.array(actual_state_matrix).T
+    actual_desired_state_matrix = np.array(actual_desired_state_matrix).T.squeeze()
+    actual_state_matrix = np.array(actual_state_matrix).T.squeeze()
+    print(actual_state_matrix.shape, actual_desired_state_matrix.shape)
     time_vec = np.array(times)
     return actual_state_matrix, actual_desired_state_matrix, time_vec
 
@@ -89,10 +95,10 @@ def plot(actual_state_matrix, actual_desired_state_matrix, time_vec, params):
         
 def main(params):
     manager = StateManager(params)
-    outs = execute(params, manager)
+    actual_state_matrix, actual_desired_state_matrix, time_vec = execute(params, manager)
 
 
-    # plot(*outs)
+    plot(actual_state_matrix, actual_desired_state_matrix, time_vec, params)
 
         
 if __name__ == '__main__':
