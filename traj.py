@@ -78,7 +78,10 @@ class TrajectoryGenerator():
             duration = 6.
             for i in np.arange(0, duration, self.dt):
                 vec = desstatevec.copy() 
-                vec[0] = 0.3 * (i/duration)
+                # vec[0] = 0.3 * (i/duration)
+                omega = 2*np.pi * i/duration
+                vec[0] = vec[0] + 0.3 * np.cos(omega)
+                vec[1] = vec[1] + 0.3 * np.sin(omega)
 
                 vec[5] = 0.3/duration
                 self.trajectory.append(vec.copy())
