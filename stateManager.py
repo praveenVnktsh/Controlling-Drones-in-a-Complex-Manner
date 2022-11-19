@@ -37,18 +37,22 @@ class StateManager():
             elif self.state == State.TRACK:
                 self.state = State.COMPLETE
 
-        if self.question in [4]:
+        if self.question in [4, 5]:
             self.prevstate = self.state
             self.state = State((self.state.value + 1) % 7)
+        
 
         
         print("State Change |", self.prevstate, '->', self.state)
         self.planner.planTrajectory(t, curstatevec, self.state, )
+        # print(self.planner.trajectory)
 
 
 
     def getDesiredState(self, t, curstatevec):
-        if np.linalg.norm(self.planner.trajectory[-1][:3] - curstatevec[:3]) < 0.05:
+        err = np.linalg.norm(self.planner.trajectory[-1][:3] - curstatevec[:3])
+        print(self.planner.trajectory[-1][:3], curstatevec[:3])
+        if self.planner.complete and  err < 0.045:
             print("REACHED")
             self.setNextState(t, curstatevec)
         a = None        

@@ -17,9 +17,8 @@ class TrajectoryGenerator():
 
     def getDesiredState(self, t):
         ind = max(0, min(len(self.trajectory) - 1, int((t - self.starttime)/self.dt)))
-        # if ind > len(self.trajectory) - 1:
-        #     self.complete = True
-        #     return None
+        if int((t - self.starttime)/self.dt) > len(self.trajectory) - 1:
+            self.complete = True
 
         traj = self.trajectory[ind]
         desired_state_dic = {
@@ -61,39 +60,55 @@ class TrajectoryGenerator():
                 self.times.append(curtime + i)
 
         elif state in [State.HOVER1, State.HOVER2]:
-            for i in np.arange(0, 1, self.dt):
+            for i in np.arange(0, 3, self.dt):
                 self.trajectory.append(desstatevec.copy())
                 self.times.append(curtime + i)
 
         elif state == State.TAKEOFF:
-            duration = 4.0
+            duration = 2.0
             for i in np.arange(0, duration, self.dt):
                 vec = desstatevec.copy() 
-                vec[2] = i/duration
-                # vec[5] = 1.0/duration
+                vec[2] = 0.4*(i/duration)
+                vec[5] = 1.0/duration
                 self.trajectory.append(vec.copy())
                 self.times.append(curtime + i)
+            for i in np.arange(0, 0.5, self.dt):
+                vec = desstatevec.copy() 
+                vec[2] = 0.5
+                vec[5] = 0
+                self.trajectory.append(vec.copy())
+                self.times.append(duration + curtime + i)
 
         elif state == State.TRACK:
-            duration = 6.
-            for i in np.arange(0, duration, self.dt):
-                vec = desstatevec.copy() 
-                # vec[0] = 0.3 * (i/duration)
-                omega = 2*np.pi * i/duration
-                vec[0] = vec[0] + 0.3 * np.cos(omega)
-                vec[1] = vec[1] + 0.3 * np.sin(omega)
+            question = self.question
+            if question == 4:
+                duration = 6.
+                for i in np.arange(0, duration, self.dt):
+                    vec = desstatevec.copy() 
+                    vec[0] = 0.3 * (i/duration)
+                    # omega = 2*np.pi * i/duration
+                    # vec[0] = vec[0] + 0.3 * np.cos(omega)
+                    # vec[1] = vec[1] + 0.3 * np.sin(omega)
 
-                vec[5] = 0.3/duration
-                self.trajectory.append(vec.copy())
-                self.times.append(curtime + i)
+                    vec[5] = 0.3/duration
+                    self.trajectory.append(vec.copy())
+                    self.times.append(curtime + i)
+            if question == 5:
+                duration = 6.
+                for i in np.arange(0, duration, self.dt):
+                    vec = desstatevec.copy() 
+                    vec[2] = 0.1
+                    self.trajectory.append(vec.copy())
+                    self.times.append(curtime + i)
+
 
         elif state == State.LAND:
             height = desstatevec[2]
             duration = 4.0
             for i in np.arange(0, duration, self.dt):
                 vec = desstatevec.copy() 
-                vec[2] = height - i/duration
-                vec[5] = -1/duration
+                vec[2] = height*(1 - i/duration)
+                # vec[5] = -1/duration
                 self.trajectory.append(vec.copy())
                 self.times.append(curtime + i)
 

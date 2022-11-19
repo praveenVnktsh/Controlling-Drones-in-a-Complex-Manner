@@ -28,7 +28,7 @@ def execute(params : dict, stateManager : StateManager = None):
 
     stateManager.setNextState(t, drone.state)
     
-
+    thrustToMassPlot = []
     while not stateManager.isComplete():
 
         i += 1
@@ -47,10 +47,7 @@ def execute(params : dict, stateManager : StateManager = None):
             "rpm":drone.state[12:16].squeeze()
         }
 
-        # print(current_state_dic)
-        # if i == 2:
-        #     exit()
-        
+
 
         F_desired, desired_state_dic['acc'] = controller.position_controller(current_state_dic, desired_state_dic)
         desired_state_dic["rot"],desired_state_dic["omega"] = controller.attitude_by_flatness(desired_state_dic)        
@@ -79,6 +76,8 @@ def execute(params : dict, stateManager : StateManager = None):
 
         times.append(t)
 
+        thrustToMassPlot.append((drone.thrust) / (params['mass'] * params['gravity']))
+
         # if stateManager.state != State.TAKEOFF:
         #     break
 
@@ -87,22 +86,33 @@ def execute(params : dict, stateManager : StateManager = None):
     actual_desired_state_matrix = np.array(actual_desired_state_matrix).T.squeeze()
     actual_state_matrix = np.array(actual_state_matrix).T.squeeze()
     time_vec = np.array(times)
-    return actual_state_matrix, actual_desired_state_matrix, time_vec
+    plotDic = {
+        'FbyW' : thrustToMassPlot,
+        'actual_state_matrix' : actual_state_matrix,
+        'actual_desired_state_matrix' : actual_desired_state_matrix,
+        'time_vec' : time_vec
+    }
+    
+    return plotDic
 
 
-def plot(actual_state_matrix, actual_desired_state_matrix, time_vec, params):
-    plot_state_error(actual_state_matrix,actual_desired_state_matrix,time_vec, params)
-    plot_position_3d(actual_state_matrix,actual_desired_state_matrix, params)
+def plot(plotDic):
+
+    plt.figure()
+    plt.plot(plotDic['FbyW'], plotDic['time_vec'])
+
+    # plt.figure()
+    plt.show()
+    plot_state_error(plotDic["actual_state_matrix"],plotDic["actual_desired_state_matrix"],plotDic["time_vec"], params)
+    plot_position_3d(plotDic["actual_state_matrix"],plotDic["actual_desired_state_matrix"], params)
     plt.show()  
 
 
         
 def main(params):
     manager = StateManager(params)
-    actual_state_matrix, actual_desired_state_matrix, time_vec = execute(params, manager)
-
-
-    plot(actual_state_matrix, actual_desired_state_matrix, time_vec, params)
+    plotDic = execute(params, manager)
+    plot(plotDic, params)
 
         
 if __name__ == '__main__':

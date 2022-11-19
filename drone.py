@@ -7,6 +7,7 @@ class Drone:
     def __init__(self, params, initState = np.zeros((16,))):
         self.params = params
         self.state = initState
+        self.thrust = 0
 
     @staticmethod
     def dynamics(t,state,params,F_actual,M_actual,rpm_motor_dot):
@@ -131,6 +132,7 @@ class Drone:
 
     def step(self, F_desired, M_desired ):
         [F_actual,M_actual,rpm_motor_dot] = self.motor_model(F_desired,M_desired)
+        self.thrust = np.linalg.norm(F_actual)
 
         sol = solve_ivp(
             self.dynamics, 
