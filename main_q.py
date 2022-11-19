@@ -7,15 +7,15 @@ from controller import Controller
 from drone import Drone
 from plot import *
 from stateManager import StateManager
-from utils import State
+from utils import NumpyEncoder, State
 
 def execute(params : dict, stateManager : StateManager = None):
 
     dt = params['dt'] # in secs
 
 
-    actual_desired_state_matrix = []
-    actual_state_matrix = []
+    desired_states = []
+    actual_states = []
     initState = np.zeros((16,))
     # initState[2] = 0.5
     drone = Drone(params, initState =initState)
@@ -29,6 +29,12 @@ def execute(params : dict, stateManager : StateManager = None):
     stateManager.setNextState(t, drone.state)
     
     thrustToMassPlot = []
+
+    trackingIntervalPlot = {
+        'actualstates': [],
+        'desiredstates' : []
+    }
+
     while not stateManager.isComplete():
 
         i += 1
@@ -63,7 +69,7 @@ def execute(params : dict, stateManager : StateManager = None):
         acc = (sol.y[3:6,-1]-sol.y[3:6,-2])/(sol.t[-1]-sol.t[-2])
 
         state_list[12:15] = acc
-        actual_state_matrix.append(state_list[:15].copy())
+        actual_states.append(state_list[:15].copy())
 
         temp  = np.zeros((15, 1))
         temp[0:3] = desired_state_dic["pos"].reshape(-1, 1)
@@ -72,10 +78,12 @@ def execute(params : dict, stateManager : StateManager = None):
         temp[9:12] = desired_state_dic["omega"].reshape(-1, 1)
         temp[12:15] = desired_state_dic["acc"].reshape(-1, 1)
         
-        actual_desired_state_matrix.append(temp.copy())
+        desired_states.append(temp.copy())
+        if stateManager.state == State.TRACK:
+            trackingIntervalPlot['actualstates'].append(state_list[:15].copy())
+            trackingIntervalPlot['desiredstates'].append(temp.copy())
 
         times.append(t)
-
         thrustToMassPlot.append((drone.thrust) / (params['mass'] * params['gravity']))
 
         # if stateManager.state != State.TAKEOFF:
@@ -83,28 +91,30 @@ def execute(params : dict, stateManager : StateManager = None):
 
     print("Statemanager isComplete", stateManager.isComplete())
         
-    actual_desired_state_matrix = np.array(actual_desired_state_matrix).T.squeeze()
-    actual_state_matrix = np.array(actual_state_matrix).T.squeeze()
+    desired_states = np.array(desired_states).T.squeeze()
+    actual_states = np.array(actual_states).T.squeeze()
     time_vec = np.array(times)
     plotDic = {
         'FbyW' : thrustToMassPlot,
-        'actual_state_matrix' : actual_state_matrix,
-        'actual_desired_state_matrix' : actual_desired_state_matrix,
-        'time_vec' : time_vec
+        'actual_states' : actual_states,
+        'desired_states' : desired_states,
+        'time_vec' : time_vec,
+        'trackingintervals' : trackingIntervalPlot
     }
-    
     return plotDic
 
 
-def plot(plotDic):
+def plot(plotDic, params):
 
     plt.figure()
-    plt.plot(plotDic['FbyW'], plotDic['time_vec'])
+    plt.plot(plotDic['time_vec'], plotDic['FbyW'])
+    plt.title("Thrust to Weight ratio")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.savefig(f'outputs/{params["question"]}/fbyw.png')
 
-    # plt.figure()
-    plt.show()
-    plot_state_error(plotDic["actual_state_matrix"],plotDic["actual_desired_state_matrix"],plotDic["time_vec"], params)
-    plot_position_3d(plotDic["actual_state_matrix"],plotDic["actual_desired_state_matrix"], params)
+    plot_state_error(plotDic["actual_states"],plotDic["desired_states"],plotDic["time_vec"], params)
+    plot_position_3d(plotDic["actual_states"],plotDic["desired_states"], params)
     plt.show()  
 
 
@@ -124,8 +134,9 @@ if __name__ == '__main__':
     STRUCTURE AT A MINIMUM.
     '''
     # run the file with command "python3 main.py question_number" in the terminal
-    
+    import os
     question = int(sys.argv[1])
+    os.makedirs(f'outputs/{question}/', exist_ok= True)
     params = {
         "mass": 0.770, 
         "gravity": 9.80665, 
@@ -145,5 +156,9 @@ if __name__ == '__main__':
         'question' : question,
         'dt' : 0.005      
     }
+    import json
+    with open(f'outputs/{question}/params.json', 'w') as f:
+        json.dump(params, f,indent=4,  cls=NumpyEncoder)
+    exit()
     main(params)    
     

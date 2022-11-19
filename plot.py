@@ -25,7 +25,7 @@ def plot_state_error(state,state_des,time_vector, params):
     error_acc = acc- acc_des
 
     # plot erros
-    fig = plt.figure(1)
+    fig = plt.figure()
     # plot position error
     axs = fig.subplots(5,3)
     axs[0,0].plot(time_vector,error_pos[0,:])
@@ -93,7 +93,7 @@ def plot_state_error(state,state_des,time_vector, params):
     plt.savefig(f'outputs/errors_{params["question"]}_{filename}.png')
 
     # plot values
-    fig1 = plt.figure(2)
+    fig1 = plt.figure()
     # plot position
     axs1 = fig1.subplots(5,3)
     axs1[0,0].plot(time_vector,pos[0,:])
@@ -159,7 +159,7 @@ def plot_state_error(state,state_des,time_vector, params):
 def plot_position_3d(state, state_des, params):
     pos = state[0:3,:]
     pos_des = state_des[0:3,:]
-    fig = plt.figure(3)
+    fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     ax.plot(pos[0,:], pos[1,:], pos[2,:], color='blue', 
