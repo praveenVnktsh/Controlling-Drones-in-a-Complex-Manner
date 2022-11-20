@@ -129,7 +129,11 @@ def plot(plotDic, params):
 def main(params):
     manager = StateManager(params)
     plotDic = execute(params, manager)
+    print("Execution complete...")
+
+    print("Plotting...")
     plot(plotDic, params)
+    plt.close("all")
 
         
 if __name__ == '__main__':
@@ -185,6 +189,45 @@ if __name__ == '__main__':
 
         params['kppos'] = [20, 20, 10]
         params['kdpos'] = [8, 8, 19]
+        
+        main(params)
+    
+    if question in [2, 3]:
+        
+        params['plotprefix'] = 'gains2_kdpos'
+        params['kpatt'] = [190, 190, 20]
+        params['kdatt'] = [30, 30, 18]
+
+        params['kppos'] = [20, 20, 10]
+        params['kdpos'] = [13, 13, 19]
+        
+        main(params)
+
+        params['plotprefix'] = 'gains3_kppos'
+        params['kpatt'] = [190, 190, 20]
+        params['kdatt'] = [30, 30, 18]
+
+        params['kppos'] = [25, 25, 10]
+        params['kdpos'] = [8, 8, 9]
+        
+        main(params)
+
+
+        params['plotprefix'] = 'gains4_kpatt'
+        params['kpatt'] = [220, 220, 20]
+        params['kdatt'] = [30, 30, 18]
+
+        params['kppos'] = [25, 25, 10]
+        params['kdpos'] = [8, 8, 9]
+        
+        main(params)
+
+        params['plotprefix'] = 'gains4_kdatt'
+        params['kpatt'] = [190, 190, 20]
+        params['kdatt'] = [40, 40, 18]
+
+        params['kppos'] = [25, 25, 10]
+        params['kdpos'] = [8, 8, 9]
         
         main(params)
         

@@ -1,0 +1,53 @@
+{
+    "mass": 0.77,
+    "gravity": 9.80665,
+    "arm_length": 0.1103,
+    "motor_spread_angle": 0.925,
+    "thrust_coefficient": 8.07e-09,
+    "moment_scale": 1.3719e-10,
+    "motor_constant": 36.5,
+    "rpm_min": 3000,
+    "rpm_max": 20000,
+    "inertia": [
+        [
+            0.0033,
+            0.0,
+            0.0
+        ],
+        [
+            0.0,
+            0.0033,
+            0.0
+        ],
+        [
+            0.0,
+            0.0,
+            0.005
+        ]
+    ],
+    "COM_vertical_offset": 0.05,
+    "kpatt": [
+        190,
+        190,
+        70
+    ],
+    "kdatt": [
+        30,
+        30,
+        18
+    ],
+    "kppos": [
+        20,
+        20,
+        18
+    ],
+    "kdpos": [
+        8,
+        8,
+        9
+    ],
+    "question": 2,
+    "q5trackpsi": 0,
+    "dt": 0.005,
+    "plotprefix": "a"
+}

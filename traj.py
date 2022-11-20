@@ -18,7 +18,10 @@ class TrajectoryGenerator():
 
     def getDesiredState(self, t):
         ind = max(0, min(len(self.trajectory) - 1, int((t - self.starttime)/self.dt)))
+        print(self.trajectory[ind][:3], end = ' | ')
         if int((t - self.starttime)/self.dt) > len(self.trajectory) - 1:
+        
+
             self.complete = True
 
         traj = self.trajectory[ind]
@@ -101,6 +104,37 @@ class TrajectoryGenerator():
                     vec[2] = 0.1
                     vec[8] = self.params['q5trackpsi']
                     
+                    self.trajectory.append(vec.copy())
+                    self.times.append(curtime + i)
+            if question == 2:
+                duration = 2
+                for loc in [0.0, 0.1, 0.2, 0.3, 0.4]:
+                    for i in np.arange(0, duration, self.dt):
+                        vec = desstatevec.copy() 
+                        vec[0] = loc
+                        self.trajectory.append(vec.copy())
+                        self.times.append(curtime + i)
+                
+            if question == 3:
+                duration = 4
+                a = 2 * 1.0 /  (duration**2)
+                for i in np.arange(0, duration, self.dt):
+                    vec = desstatevec.copy() 
+                    vec[2] = 0.5 * a * (i**2)
+                    vec[5] = a * i
+                    self.trajectory.append(vec.copy())
+                    self.times.append(curtime + i)
+                for i in np.arange(duration, duration + 2, self.dt):
+                    vec = desstatevec.copy() 
+                    vec[2] = 1.0
+                    vec[5] = 0
+                    self.trajectory.append(vec.copy())
+                    self.times.append(curtime + i)
+
+                for i in np.arange(duration + 2, 2*duration + 2, self.dt):
+                    vec = desstatevec.copy() 
+                    vec[2] = 0.5 * a * ((2*duration + 2 - i)**2)
+                    vec[5] = -a * (2*duration + 2 - i )
                     self.trajectory.append(vec.copy())
                     self.times.append(curtime + i)
 

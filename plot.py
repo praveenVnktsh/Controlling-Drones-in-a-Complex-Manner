@@ -184,7 +184,7 @@ def plot_position_3d(state, state_des, params):
     ax.axes.set_zlim3d(bottom=0, top=1.5)
 	
 
-    plt.savefig(f'outputs/{params["question"]}/trajectory.png')
+    plt.savefig(f'outputs/{params["question"]}/{params["plotprefix"]}_trajectory.png')
 
 
 
