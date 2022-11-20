@@ -6,6 +6,7 @@ class TrajectoryGenerator():
     def __init__(self, params):
         self.question = params['question']
         self.dt = params['dt']
+        self.params = params
         
         self.trajectory = []
         self.times = []
@@ -98,6 +99,8 @@ class TrajectoryGenerator():
                 for i in np.arange(0, duration, self.dt):
                     vec = desstatevec.copy() 
                     vec[2] = 0.1
+                    vec[8] = self.params['q5trackpsi']
+                    
                     self.trajectory.append(vec.copy())
                     self.times.append(curtime + i)
 

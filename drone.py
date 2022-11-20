@@ -118,9 +118,12 @@ class Drone:
                 [-cq, cq, -cq, cq],
             ]
         )
-        
-        rpmd = np.sqrt(np.dot(np.linalg.inv(A), np.array([F[2], M[0], M[1], M[2]])))
-        rpmd = np.clip(rpmd, params['rpm_min'], params['rpm_max'])
+        rpmd = (np.dot(np.linalg.inv(A), np.array([F[2], M[0], M[1], M[2]])))
+        rpmd = np.clip(rpmd, params['rpm_min'] ** 2, params['rpm_max'] ** 2)
+        rpmd = np.sqrt(rpmd)
+        # a =  np.dot(np.linalg.inv(A), np.array([F[2], M[0], M[1], M[2]]))
+        # b = np.clip(rpmd, params['rpm_min'] ** 2, params['rpm_max'] ** 2)
+        # print(rpmd, a, b)
         rpm = np.clip(rpm,  params['rpm_min'], params['rpm_max'])
         vals = np.dot(A, np.square(rpm))
         rpm_dot = params['motor_constant'] *(rpmd - rpm)

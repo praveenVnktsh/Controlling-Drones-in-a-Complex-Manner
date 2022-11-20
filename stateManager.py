@@ -51,7 +51,7 @@ class StateManager():
 
     def getDesiredState(self, t, curstatevec):
         err = np.linalg.norm(self.planner.trajectory[-1][:3] - curstatevec[:3])
-        print(self.planner.trajectory[-1][:3], curstatevec[:3])
+        # print(self.planner.trajectory[-1][:3], curstatevec[:3])
         if self.planner.complete and  err < 0.045:
             print("REACHED")
             self.setNextState(t, curstatevec)

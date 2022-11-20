@@ -32,7 +32,8 @@ def execute(params : dict, stateManager : StateManager = None):
 
     trackingIntervalPlot = {
         'actualstates': [],
-        'desiredstates' : []
+        'desiredstates' : [],
+        'times' : []
     }
 
     while not stateManager.isComplete():
@@ -82,6 +83,7 @@ def execute(params : dict, stateManager : StateManager = None):
         if stateManager.state == State.TRACK:
             trackingIntervalPlot['actualstates'].append(state_list[:15].copy())
             trackingIntervalPlot['desiredstates'].append(temp.copy())
+            trackingIntervalPlot['times'].append(t)
 
         times.append(t)
         thrustToMassPlot.append((drone.thrust) / (params['mass'] * params['gravity']))
@@ -90,7 +92,10 @@ def execute(params : dict, stateManager : StateManager = None):
         #     break
 
     print("Statemanager isComplete", stateManager.isComplete())
-        
+    trackingIntervalPlot['desiredstates'] = np.array(trackingIntervalPlot['desiredstates']).T.squeeze()
+    trackingIntervalPlot['actualstates'] = np.array(trackingIntervalPlot['actualstates']).T.squeeze()
+    trackingIntervalPlot['times'] = np.array(trackingIntervalPlot['times'])
+
     desired_states = np.array(desired_states).T.squeeze()
     actual_states = np.array(actual_states).T.squeeze()
     time_vec = np.array(times)
@@ -114,8 +119,10 @@ def plot(plotDic, params):
     plt.savefig(f'outputs/{params["question"]}/fbyw.png')
 
     plot_state_error(plotDic["actual_states"],plotDic["desired_states"],plotDic["time_vec"], params)
+    plot_state_error(plotDic["trackingintervals"]['actualstates'],plotDic["trackingintervals"]['desiredstates'],plotDic['trackingintervals']["times"], params, isTrack = True)
     plot_position_3d(plotDic["actual_states"],plotDic["desired_states"], params)
-    plt.show()  
+    if question == 5:
+        plotq5(plotDic, params)
 
 
         
@@ -154,11 +161,16 @@ if __name__ == '__main__':
         'kppos':[17, 17, 20], 
         'kdpos': [6.6, 6.6, 9], 
         'question' : question,
-        'dt' : 0.005      
+        'q5trackpsi' : 0,
+        'dt' : 0.005,
+        'plotprefix' : 'a'      
     }
     import json
     with open(f'outputs/{question}/params.json', 'w') as f:
         json.dump(params, f,indent=4,  cls=NumpyEncoder)
-    exit()
-    main(params)    
+    # main(params)    
+
+    params['q5trackpsi'] = 15 * np.pi / 180
+    params['plotprefix'] = 'b'
+    main(params)
     
