@@ -200,8 +200,8 @@ def plotq5(plotDic, params):
 
 	fig1 = plt.figure(figsize = (8, 8))
 
-	axs = fig1.subplots(2,2)
-	meantime = np.mean(time)
+	axs = fig1.subplots(2,2, )
+	fig1.subplots_adjust(hspace=.5)
 
 
 	settlingtimestamp = (errors[:, 2]) < 0.04 # 10% of the change in input.
@@ -210,8 +210,10 @@ def plotq5(plotDic, params):
 	settlingtime = settlingtimestamp - time[0]
 	risetime =  settlingtimestamp - risetimestamp
 
-	print('Settling time = ', settlingtime)
-	print('Rise time = ', risetime)
+	print("-------System Statistics--------")
+	print('[Z] Settling time = ', settlingtime)
+	print('[Z] Rise time = ', risetime)
+	print("[Z] Steady State values = ", states[-1, 2])
 
 
 	axs[0,0].plot(time, errors[:,2])
@@ -220,14 +222,53 @@ def plotq5(plotDic, params):
 	axs[0,0].axvline(x=settlingtimestamp, color='r', linestyle = '--')
 	axs[0,0].axvline(x=risetimestamp, color='g', linestyle = '--')
 
+	
+
 
 	axs[0,1].plot(time, errors[:,5])
 	axs[0,1].set_title("Velocity Error in z")
 	axs[0,1].set(xlabel = 'time(s)', ylabel = 'z(m)')
 
+	settlingtimestampstart = time[np.argmax(abs(errors[:, 5]))]
+	newtime = time[time > settlingtimestampstart]
+	newerrors = abs(errors[:, 5][time > settlingtimestampstart])
+	
+	risetimestart = newtime[newerrors - 0.9 * max(newerrors) < 0.01][0]
+
+	settlingtimestampend = newtime[newerrors - 0.1 * max(newerrors) < 0.01][0]
+	settlingtime = settlingtimestampend - settlingtimestampstart
+	risetime =  settlingtimestampend - risetimestart
+
+	print('[Vz] Settling time = ', settlingtime)
+	print('[Vz] Rise time = ', risetime)
+	print("[Vz] Steady State values = ", states[-1, 2])
+
+	axs[0,1].axvline(x=settlingtimestampend, color='r', linestyle = '--')
+	axs[0,1].axvline(x=settlingtimestampstart, color='g', linestyle = '--')
+	axs[0,1].axvline(x=settlingtimestampend, color='r', linestyle = '--')
+	axs[0,1].axvline(x=risetimestart, color='g', linestyle = '--')
+
 	axs[1,0].plot(time, errors[:,14])
 	axs[1,0].set_title("Acceleration Error in z")
 	axs[1,0].set(xlabel = 'time(s)', ylabel = 'z(m)')
+
+
+	axs[1,1].plot(time, errors[:,8])
+	axs[1,1].set_title("Heading Error")
+	axs[1,1].set(xlabel = 'time(s)', ylabel = 'psi (rad)')
+
+	settlingtimestamp = time[abs(errors[:, 8]) < 0.1 * (15 * np.pi/180)][0] # 10% of the change in input.
+	risetimestamp = time[abs(errors[:, 8]) < 0.9 * (15 * np.pi/180)][0]
+	settlingtime = settlingtimestamp - time[0]
+	risetime =  settlingtimestamp - risetimestamp
+
+	axs[1, 1].axvline(x=settlingtimestamp, color='r', linestyle = '--')
+	axs[1, 1].axvline(x=risetimestamp, color='g', linestyle = '--')
+
+
+	print('[psi] Settling time = ', settlingtime)
+	print('[psi] Rise time = ', risetime)
+	print("[psi] Steady State values = ", states[-1, 8] * 180/np.pi)
 	
 	plotprefix = f'outputs/{params["question"]}/' + params['plotprefix']
 
