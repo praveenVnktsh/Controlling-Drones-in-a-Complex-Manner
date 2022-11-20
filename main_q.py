@@ -116,7 +116,7 @@ def plot(plotDic, params):
     plt.title("Thrust to Weight ratio")
     plt.xlabel("Time (s)")
     plt.ylabel("Amplitude")
-    plt.savefig(f'outputs/{params["question"]}/fbyw.png')
+    plt.savefig(f'outputs/{params["question"]}/{params["plotprefix"]}_fbyw.png')
 
     plot_state_error(plotDic["actual_states"],plotDic["desired_states"],plotDic["time_vec"], params)
     plot_state_error(plotDic["trackingintervals"]['actualstates'],plotDic["trackingintervals"]['desiredstates'],plotDic['trackingintervals']["times"], params, isTrack = True)
@@ -156,10 +156,10 @@ if __name__ == '__main__':
         "rpm_max": 20000, 
         "inertia": np.diag([0.0033,0.0033,0.005]), 
         "COM_vertical_offset": 0.05,            
-        'kpatt': [190, 198, 80], 
-        'kdatt' : [30,30,17.88], 
-        'kppos':[17, 17, 20], 
-        'kdpos': [6.6, 6.6, 9], 
+        'kpatt': [190, 190, 70], 
+        'kdatt' : [30,30, 18], 
+        'kppos':[20, 20, 18], 
+        'kdpos': [8, 8, 9], 
         'question' : question,
         'q5trackpsi' : 0,
         'dt' : 0.005,
@@ -168,9 +168,23 @@ if __name__ == '__main__':
     import json
     with open(f'outputs/{question}/params.json', 'w') as f:
         json.dump(params, f,indent=4,  cls=NumpyEncoder)
-    # main(params)    
 
-    params['q5trackpsi'] = 15 * np.pi / 180
-    params['plotprefix'] = 'b'
-    main(params)
-    
+    main(params)   
+
+    if question == 5:
+        
+
+        params['q5trackpsi'] = 15 * np.pi / 180
+        params['plotprefix'] = 'b'
+        main(params)
+
+        params['q5trackpsi'] = 0
+        params['plotprefix'] = 'gains2'
+        params['kpatt'] = [190, 190, 20]
+        params['kdatt'] = [30, 30, 18]
+
+        params['kppos'] = [20, 20, 10]
+        params['kdpos'] = [8, 8, 19]
+        
+        main(params)
+        

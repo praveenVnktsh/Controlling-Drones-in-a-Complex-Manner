@@ -82,7 +82,7 @@ def plot_state_error(state,state_des,time_vector, params, isTrack = False):
 	axs[4,2].set_title("Error in acc_z")
 	axs[4,2].set(xlabel = 'time(s)', ylabel = 'acc_z (m/s2)')
 
-	fig.tight_layout(pad = 0.2)
+	fig.tight_layout(pad = 0.5)
 	name = 'stateErrors'
 	if isTrack:
 		name = 'stateErrors_trackPlot'
@@ -150,7 +150,7 @@ def plot_state_error(state,state_des,time_vector, params, isTrack = False):
 	axs1[4,2].set_title("acc_z")
 	axs1[4,2].set(xlabel = 'time(s)', ylabel = 'acc_z (m/s2)')
 
-	fig1.tight_layout(pad=0.2)
+	fig1.tight_layout(pad=0.5)
 
 	name = 'states'
 	if isTrack:
@@ -244,7 +244,7 @@ def plotq5(plotDic, params):
 	print("[Vz] Steady State values = ", states[-1, 2])
 
 	axs[0,1].axvline(x=settlingtimestampend, color='r', linestyle = '--')
-	axs[0,1].axvline(x=settlingtimestampstart, color='g', linestyle = '--')
+	axs[0,1].axvline(x=settlingtimestampstart, color='k', linestyle = '--')
 	axs[0,1].axvline(x=settlingtimestampend, color='r', linestyle = '--')
 	axs[0,1].axvline(x=risetimestart, color='g', linestyle = '--')
 
