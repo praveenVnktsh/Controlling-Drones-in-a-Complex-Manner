@@ -17,7 +17,8 @@ def execute(params : dict, stateManager : StateManager = None):
     desired_states = []
     actual_states = []
     initState = np.zeros((16,))
-    # initState[2] = 0.5
+    if params['question'] == 2:
+        initState[2] = 0.5
     drone = Drone(params, initState =initState)
     controller = Controller(params)
 
@@ -232,7 +233,7 @@ if __name__ == '__main__':
 
         params['plotprefix'] = 'gains4_kdatt'
         params['kpatt'] = [190, 190, 20]
-        params['kdatt'] = [40, 40, 18]
+        params['kdatt'] = [35, 35, 20]
 
         params['kppos'] = [25, 25, 10]
         params['kdpos'] = [8, 8, 9]
