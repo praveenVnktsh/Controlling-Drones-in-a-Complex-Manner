@@ -163,28 +163,33 @@ def plot_state_error(state,state_des,time_vector, params, isTrack = False):
 # Helper to visualize positions for the flight of the quadrotor
 
 def plot_position_3d(state, state_des, params):
-    pos = state[0:3,:]
-    pos_des = state_des[0:3,:]
-    fig = plt.figure(figsize = (8, 8))
-    ax = fig.add_subplot(111, projection='3d')
+	pos = state[0:3,:]
+	pos_des = state_des[0:3,:]
+	fig = plt.figure(figsize = (8, 8))
+	ax = fig.add_subplot(111, projection='3d')
 
-    ax.plot(pos[0,:], pos[1,:], pos[2,:], color='blue', 
-	    label='Actual position')
-    ax.plot(pos_des[0,:], pos_des[1,:], pos_des[2,:], color='red',
-	    label='Desired position')
+	ax.plot(pos[0,:], pos[1,:], pos[2,:], color='blue', 
+		label='Actual position')
+	ax.plot(pos_des[0,:], pos_des[1,:], pos_des[2,:], color='red',
+		label='Desired position')
 
-    ax.set(xlabel = 'x (m)')
-    ax.set(ylabel = 'y (m)')
-    ax.set(zlabel = 'z (m)')
-    ax.set_title('Position')
-    ax.legend()
+	ax.set(xlabel = 'x (m)')
+	ax.set(ylabel = 'y (m)')
+	ax.set(zlabel = 'z (m)')
+	ax.set_title('Position')
+	ax.legend()
+	if params['question'] > 7:
+		ax.axes.set_xlim3d(left=-3, right=3)
+		ax.axes.set_ylim3d(bottom=-3, top=3)
+		ax.axes.set_zlim3d(bottom=0, top=1.5)
+		
+	else:
+		ax.axes.set_xlim3d(left=-.5, right=.5)
+		ax.axes.set_ylim3d(bottom=-.5, top=.5)
+		ax.axes.set_zlim3d(bottom=0, top=1.5)
 
-    ax.axes.set_xlim3d(left=-.5, right=.5)
-    ax.axes.set_ylim3d(bottom=-.5, top=.5)
-    ax.axes.set_zlim3d(bottom=0, top=1.5)
-	
 
-    plt.savefig(f'outputs/{params["question"]}/{params["plotprefix"]}_trajectory.png')
+	plt.savefig(f'outputs/{params["question"]}/{params["plotprefix"]}_trajectory.png')
 
 
 

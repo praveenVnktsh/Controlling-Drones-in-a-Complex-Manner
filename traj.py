@@ -137,6 +137,57 @@ class TrajectoryGenerator():
                     vec[5] = -a * (2*duration + 2 - i )
                     self.trajectory.append(vec.copy())
                     self.times.append(curtime + i)
+            if question == 8:
+                omega = 0 # by setting omega = 0.5, we can get a velocty of 1 at the end.
+                alpha = 0.5/(2*np.pi)
+                theta = 0
+                # for i in np.arange(0, duration, self.dt):
+                i = 0
+                while theta < 2 * np.pi / 4 :
+                    vec = desstatevec.copy() 
+                    theta = 0.5 * alpha * (i**2)
+
+                    vec[0] = 2 * np.cos(theta - np.pi/2)
+                    vec[1] = 1 * np.sin(theta - np.pi/2) + 1
+                    vec[3] = -2 * np.sin(theta - np.pi/2) * alpha * i
+                    vec[4] = 1 * np.cos(theta - np.pi/2) * alpha * i
+                    i += self.dt 
+                    self.trajectory.append(vec.copy())
+                    self.times.append(curtime + i)
+                # duration = i
+                # for i in np.arange(duration, duration + 6 * np.pi / omega, self.dt):
+                #     vec = desstatevec.copy() 
+                #     theta = omega * i
+                #     vec[0] = 2 * np.cos(theta - np.pi/2)
+                #     vec[1] = 1 * np.sin(theta - np.pi/2) + 1
+                #     # vec[3] = -2 * np.sin(theta - np.pi/2) * omega 
+                #     # vec[4] = 1 * np.cos(theta - np.pi/2) * omega  
+                #     self.trajectory.append(vec.copy())
+                #     self.times.append(curtime + i)
+
+                # for i in np.arange( 0.25 * 2 * np.pi / omega,  6 * np.pi / omega, self.dt):
+                #     vec = desstatevec.copy() 
+                #     theta = omega * i
+                #     vec[0] = 2 * np.cos(theta - np.pi/2)
+                #     vec[1] = 1 * np.sin(theta - np.pi/2) + 1
+                #     vec[3] = -2 * np.sin(theta - np.pi/2) / np.sqrt(5)
+                #     vec[4] = 1 * np.cos(theta - np.pi/2)/ np.sqrt(5)
+                #     self.trajectory.append(vec.copy())
+                #     self.times.append(curtime + i)
+
+
+                # for i in np.arange(  6 * np.pi / omega,  (6 + 0.5) * np.pi / omega, self.dt):
+                #     vec = desstatevec.copy() 
+                #     nomega = omega * 
+                #     theta = (nomega  ) * i
+                #     vec[0] = 2 * np.cos(theta - np.pi/2)
+                #     vec[1] = 1 * np.sin(theta - np.pi/2) + 1
+                #     vec[3] = -2 * np.sin(theta - np.pi/2) / np.sqrt(5)
+                #     vec[4] = 1 * np.cos(theta - np.pi/2)/ np.sqrt(5)
+                #     self.trajectory.append(vec.copy())
+                #     self.times.append(curtime + i)
+
+
 
 
         elif state == State.LAND:

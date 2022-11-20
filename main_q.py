@@ -35,7 +35,7 @@ def execute(params : dict, stateManager : StateManager = None):
         'desiredstates' : [],
         'times' : []
     }
-
+    velocities = []
     while not stateManager.isComplete():
 
         i += 1
@@ -87,7 +87,7 @@ def execute(params : dict, stateManager : StateManager = None):
 
         times.append(t)
         thrustToMassPlot.append((drone.thrust) / (params['mass'] * params['gravity']))
-
+        velocities.append(np.linalg.norm(state_list[3:6]))
         # if stateManager.state != State.TAKEOFF:
         #     break
 
@@ -101,6 +101,7 @@ def execute(params : dict, stateManager : StateManager = None):
     time_vec = np.array(times)
     plotDic = {
         'FbyW' : thrustToMassPlot,
+        'velocities' : velocities,
         'actual_states' : actual_states,
         'desired_states' : desired_states,
         'time_vec' : time_vec,
@@ -117,6 +118,13 @@ def plot(plotDic, params):
     plt.xlabel("Time (s)")
     plt.ylabel("Amplitude")
     plt.savefig(f'outputs/{params["question"]}/{params["plotprefix"]}_fbyw.png')
+
+    plt.figure()
+    plt.plot(plotDic['time_vec'], plotDic['velocities'])
+    plt.title("Velocity over time")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Velocity (m/s)")
+    plt.savefig(f'outputs/{params["question"]}/{params["plotprefix"]}_velocities.png')
 
     plot_state_error(plotDic["actual_states"],plotDic["desired_states"],plotDic["time_vec"], params)
     plot_state_error(plotDic["trackingintervals"]['actualstates'],plotDic["trackingintervals"]['desiredstates'],plotDic['trackingintervals']["times"], params, isTrack = True)
