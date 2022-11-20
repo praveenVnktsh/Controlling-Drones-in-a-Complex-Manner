@@ -192,7 +192,6 @@ def plot_position_3d(state, state_des, params):
 	plt.savefig(f'outputs/{params["question"]}/{params["plotprefix"]}_trajectory.png')
 
 
-
 def plotq5(plotDic, params):
 
 	vals = plotDic["trackingintervals"]
@@ -202,6 +201,10 @@ def plotq5(plotDic, params):
 
 
 	time = vals['times']
+	import sys
+	f = open(f'outputs/{params["question"]}/{params["plotprefix"]}_systemperformance.txt')
+	orig = sys.stdout 
+	sys.stdout = f
 
 	fig1 = plt.figure(figsize = (8, 8))
 
@@ -276,5 +279,6 @@ def plotq5(plotDic, params):
 	print("[psi] Steady State values = ", states[-1, 8] * 180/np.pi)
 	
 	plotprefix = f'outputs/{params["question"]}/' + params['plotprefix']
-
+	f.close()
+	sys.stdout = orig
 	plt.savefig(f'{plotprefix}_settlingandrisetimes.png')
