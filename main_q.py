@@ -200,7 +200,7 @@ if __name__ == '__main__':
         
         main(params)
     
-    if question in [2, 3]:
+    if question == 2:
         
         params['plotprefix'] = 'gains2_kdpos'
         params['kpatt'] = [190, 190, 70]
@@ -247,9 +247,25 @@ if __name__ == '__main__':
         params['plotprefix'] = 'gains3_kppos'
         params['kpatt'] = [190, 190, 20]
         params['kdatt'] = [30, 30, 18]
+        params['kppos'] = [25, 25, 20]
+        params['kdpos'] = [8, 8, 9]
+        
+        main(params)
+
+
+        params['plotprefix'] = 'gains4_kpatt'
+        params['kpatt'] = [220, 220, 20]
+        params['kdatt'] = [30, 30, 18]
         params['kppos'] = [25, 25, 10]
         params['kdpos'] = [8, 8, 9]
         
         main(params)
 
+        params['plotprefix'] = 'gains4_kdatt'
+        params['kpatt'] = [190, 190, 20]
+        params['kdatt'] = [35, 35, 20]
+        params['kppos'] = [25, 25, 10]
+        params['kdpos'] = [8, 8, 9]
+        
+        main(params)
         
