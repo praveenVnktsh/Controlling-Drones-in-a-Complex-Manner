@@ -191,11 +191,10 @@ if __name__ == '__main__':
         params['plotprefix'] = 'b'
         main(params)
 
-        params['q5trackpsi'] = 0
+        params['q5trackpsi'] = 15 * np.pi / 180
         params['plotprefix'] = 'gains2'
         params['kpatt'] = [190, 190, 20]
         params['kdatt'] = [30, 30, 18]
-
         params['kppos'] = [20, 20, 10]
         params['kdpos'] = [8, 8, 19]
         
@@ -204,18 +203,16 @@ if __name__ == '__main__':
     if question in [2, 3]:
         
         params['plotprefix'] = 'gains2_kdpos'
-        params['kpatt'] = [190, 190, 20]
+        params['kpatt'] = [190, 190, 70]
         params['kdatt'] = [30, 30, 18]
-
         params['kppos'] = [20, 20, 10]
-        params['kdpos'] = [13, 13, 19]
+        params['kdpos'] = [12, 12, 12]
         
         main(params)
 
         params['plotprefix'] = 'gains3_kppos'
         params['kpatt'] = [190, 190, 20]
         params['kdatt'] = [30, 30, 18]
-
         params['kppos'] = [25, 25, 10]
         params['kdpos'] = [8, 8, 9]
         
@@ -225,7 +222,6 @@ if __name__ == '__main__':
         params['plotprefix'] = 'gains4_kpatt'
         params['kpatt'] = [220, 220, 20]
         params['kdatt'] = [30, 30, 18]
-
         params['kppos'] = [25, 25, 10]
         params['kdpos'] = [8, 8, 9]
         
@@ -234,9 +230,26 @@ if __name__ == '__main__':
         params['plotprefix'] = 'gains4_kdatt'
         params['kpatt'] = [190, 190, 20]
         params['kdatt'] = [35, 35, 20]
-
         params['kppos'] = [25, 25, 10]
         params['kdpos'] = [8, 8, 9]
         
         main(params)
+    if question == 3:
+
+        params['plotprefix'] = 'gains2_kdpos'
+        params['kpatt'] = [190, 190, 70]
+        params['kdatt'] = [30, 30, 18]
+        params['kppos'] = [20, 20, 10]
+        params['kdpos'] = [12, 12, 12]
+        
+        main(params)
+
+        params['plotprefix'] = 'gains3_kppos'
+        params['kpatt'] = [190, 190, 20]
+        params['kdatt'] = [30, 30, 18]
+        params['kppos'] = [25, 25, 10]
+        params['kdpos'] = [8, 8, 9]
+        
+        main(params)
+
         

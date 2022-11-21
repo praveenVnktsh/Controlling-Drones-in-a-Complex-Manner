@@ -48,10 +48,10 @@ Here the Kd of the outer loop has been increased.
 Gains: 
 KXatt = [Kp_phi, Kp_theta, Kp_psi]
 KXpos = [Kp_x, Kp_y, Kp_z]
-params['kpatt'] = [190, 190, 20]
+params['kpatt'] = [190, 190, 70]
 params['kdatt'] = [30, 30, 18]
 params['kppos'] = [20, 20, 10]
-params['kdpos'] = [13, 13, 19]
+params['kdpos'] = [12, 12, 12]
 ```
 
 The actual poses of the drone are as follows:
@@ -62,7 +62,7 @@ The error plots for the requested scenario are as follows:
 
 ![](outputs/3/gains2_kdpos_stateErrors.png)
 
-- We can see that the system reaches the steady state value in a much more delayed fashion - it takes a lot more time for the drone to converge to the desired height and actually fails to do so in the actual amount of time that we give it!
+- We can see that the system reaches the steady state value in a much more delayed fashion - it takes a lot more time for the drone to converge to the desired height. This can more readily be seen in the error plots. 
 
 <p style="page-break-after: always;">&nbsp;</p>
 
@@ -106,65 +106,3 @@ We can see that the performance is well within physical limits.
 
 
 <p style="page-break-after: always;">&nbsp;</p>
-
-
-##### Modifying Kp_attitude (Inner Loop)
-
-Here the Kp of the attitude controller has been increased
-
-```
-Gains: 
-KXatt = [Kp_phi, Kp_theta, Kp_psi]
-KXpos = [Kp_x, Kp_y, Kp_z]
-params['kpatt'] = [220, 220, 20]
-params['kdatt'] = [30, 30, 18]
-params['kppos'] = [25, 25, 10]
-params['kdpos'] = [8, 8, 9]
-        
-```
-The actual poses of the drone are as follows:
-![](outputs/3/gains3_kpatt_states.png)
-
-The error plots for the requested scenario are as follows:
-
-![](outputs/3/gains3_kpatt_stateErrors.png)
-
-- We can see that the overshoot in the attitude has been increased significantly, but the system responds faster.
-
-Ensuring that the performance is physically plausible using the thrust to weight plot for this scenario:
- 
-![](outputs/3/gains3_kppos_fbyw.png)
-
-We can see that the performance is well within physical limits.
-
-<p style="page-break-after: always;">&nbsp;</p>
-
-
-##### Modifying Kd_attitude (Inner Loop)
-
-Here the Kd of the attitude controller has been increased
-
-```
-Gains: 
-KXatt = [Kp_phi, Kp_theta, Kp_psi]
-KXpos = [Kp_x, Kp_y, Kp_z]
-params['kpatt'] = [190, 190, 20]
-params['kdatt'] = [35, 35, 20]
-params['kppos'] = [25, 25, 10]
-params['kdpos'] = [8, 8, 9]
-        
-```
-The actual poses of the drone are as follows:
-![](outputs/3/gains4_kdatt_states.png)
-
-The error plots for the requested scenario are as follows:
-
-![](outputs/3/gains4_kdatt_stateErrors.png)
-
-- We can see that the overshoot in the attitude has been decreased, and the drone is smoother in its response.
-
-Ensuring that the performance is physically plausible using the thrust to weight plot for this scenario:
- 
-![](outputs/3/gains3_kppos_fbyw.png)
-
-We can see that the performance is well within physical limits.

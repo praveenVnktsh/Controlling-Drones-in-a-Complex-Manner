@@ -1,0 +1,10 @@
+-------System Statistics--------
+[Z] Settling time =  0.9999999999999787
+[Z] Rise time =  0.9099999999999806
+[Z] Steady State values =  0.10000003323214719
+[Vz] Settling time =  0.8949999999999809
+[Vz] Rise time =  0.794999999999983
+[Vz] Steady State values =  0.10000003323214719
+[psi] Settling time =  0.0
+[psi] Rise time =  0.0
+[psi] Steady State values =  4.002280801119769e-15

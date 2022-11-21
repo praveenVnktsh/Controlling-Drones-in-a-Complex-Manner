@@ -202,7 +202,7 @@ def plotq5(plotDic, params):
 
 	time = vals['times']
 	import sys
-	f = open(f'outputs/{params["question"]}/{params["plotprefix"]}_systemperformance.txt')
+	f = open(f'outputs/{params["question"]}/{params["plotprefix"]}_systemperformance.txt', 'w')
 	orig = sys.stdout 
 	sys.stdout = f
 

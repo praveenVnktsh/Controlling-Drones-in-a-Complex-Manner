@@ -37,7 +37,7 @@ class StateManager():
             elif self.state == State.TRACK:
                 self.state = State.COMPLETE
 
-        if self.question in [4, 5, 8]:
+        if self.question in [4, 5, 8, 9]:
             self.prevstate = self.state
             self.state = State((self.state.value + 1) % 7)
         
