@@ -11,11 +11,9 @@
             "id": "6ae26ebad23fe633",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "pdf",
               "state": {
-                "file": "readme_q1.md",
-                "mode": "source",
-                "source": false
+                "file": "report.pdf"
               }
             }
           }
@@ -85,7 +83,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "readme_q1.md",
+                "file": "report.pdf",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +100,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "readme_q1.md",
+                "file": "report.pdf",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +123,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "readme_q1.md"
+                "file": "report.pdf"
               }
             }
           }
@@ -138,6 +136,7 @@
   },
   "active": "6ae26ebad23fe633",
   "lastOpenFiles": [
+    "readme_q1.pdf",
     "report.pdf",
     "readme_q1.md",
     "code.pdf",
@@ -146,7 +145,6 @@
     "readme_q5.md",
     "readme_q4.md",
     "readme_q3.md",
-    "readme_q2.md",
-    "systemarch.png"
+    "readme_q2.md"
   ]
 }
